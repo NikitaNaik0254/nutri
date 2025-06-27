@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "986082683590",
+    "project_id": "foody-9fc84",
+    "storage_bucket": "foody-9fc84.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986082683590:android:6f8a38820ddcc9c31d85c7",
+        "android_client_info": {
+          "package_name": "com.example.nikki"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClhyscagUW_dYErEdlX7yweVopqxR2dLU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

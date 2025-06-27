@@ -1,0 +1,41 @@
+name: nikki
+description: A food delivery app
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_fonts: ^4.0.3
+  carousel_slider: ^4.2.1
+  provider: ^6.0.5
+  supabase_flutter: ^1.10.25
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/fooditem1.jpg
+    - assets/images/1.jpg
+    - assets/images/2.jpg
+    - assets/images/notification1.png
+    - assets/images/notification2.png
+    - assets/images/upload2.png
+    - assets/images/user.jpg
+    - assets/images/user2.png
+    - assets/images/nutri.jpg
+    - assets/images/signup.jpg
+    - assets/images/seasonal-recipe.png
+    - assets/images/seasonal-profile.png
+    - assets/images/item2.jpg
+    - assets/images/fooditem1.jpg
+    
