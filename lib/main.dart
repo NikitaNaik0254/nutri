@@ -21,13 +21,14 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'NutriNest',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.orange,
+        primarySwatch: Colors.green,
+        primaryColor: Colors.green[600],
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       initialRoute: '/login',

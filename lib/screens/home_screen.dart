@@ -6,58 +6,199 @@ import '../widgets/header.dart';
 import '../screens/search_screen.dart';
 import '../screens/notification_screen.dart';
 import '../screens/profile_screen.dart';
-import '../auth/login_screen.dart'; // Add this import
+import '../screens/cart_screen.dart';
+import '../auth/login_screen.dart';
+import '../screens/chatbot_screen.dart';
+import '../screens/meal_planner_screen.dart';
+import '../screens/food_detail_screen.dart'; // You'll need to create this
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  // Predefined credentials (same as in login_screen.dart)
+  // Predefined credentials
   static const String validUsername = "NutriNest User";
   static const String validEmail = "user@nutrinest.com";
   static const String validPassword = "nutrinest123";
 
+  // Sample food items data
+  final List<Map<String, dynamic>> trendingFoods = const [
+    {
+      'image': 'assets/images/1.jpg',
+      'name': 'Avocado Toast',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/2.jpg',
+      'name': 'Berry Smoothie',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/1.jpg',
+      'name': 'Quinoa Salad',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/2.jpg',
+      'name': 'Veggie Wrap',
+      'isLiked': false,
+    },
+  ];
+
+  final List<Map<String, dynamic>> popularFoods = const [
+    {
+      'image': 'assets/images/1.jpg',
+      'name': 'Chicken Pasta',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/2.jpg',
+      'name': 'Fruit Salad',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/1.jpg',
+      'name': 'Oatmeal Bowl',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/2.jpg',
+      'name': 'Protein Shake',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/1.jpg',
+      'name': 'Veg Burger',
+      'isLiked': false,
+    },
+    {
+      'image': 'assets/images/2.jpg',
+      'name': 'Salmon Rice',
+      'isLiked': false,
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
-    // List of image paths from your assets
-    final List<String> trendingImages = [
-      'assets/images/1.jpg',
-      'assets/images/2.jpg',
-      'assets/images/1.jpg',
-      'assets/images/2.jpg',
-      'assets/images/1.jpg',
-    ];
-
-    final List<String> popularImages = [
-      'assets/images/1.jpg',
-      'assets/images/2.jpg',
-      'assets/images/1.jpg',
-      'assets/images/2.jpg',
-      'assets/images/1.jpg',
-      'assets/images/2.jpg',
-    ];
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const HeaderWidget(),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.shopping_cart),
             onPressed: () {
-              // Logout and return to login screen
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                MaterialPageRoute(builder: (context) => const CartScreen()),
               );
             },
           ),
         ],
       ),
+      drawer: Drawer(
+        width: MediaQuery.of(context).size.width * 0.7,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundImage: AssetImage('assets/images/profile_placeholder.png'),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    validUsername,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    validEmail,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: Text('Home', style: GoogleFonts.poppins()),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.search),
+              title: Text('Search', style: GoogleFonts.poppins()),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.chat),
+              title: Text('Chatbot', style: GoogleFonts.poppins()),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: Text('Meal Planner', style: GoogleFonts.poppins()),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MealPlannerScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: Text('Notifications', style: GoogleFonts.poppins()),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: Text('Logout', style: GoogleFonts.poppins()),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome message with username
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
@@ -68,7 +209,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Rest of your existing content...
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
@@ -83,18 +223,39 @@ class HomeScreen extends StatelessWidget {
               height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: trendingImages.length,
+                itemCount: trendingFoods.length,
                 itemBuilder: (context, index) {
-                  return FoodCard(
-                    imageUrl: trendingImages[index],
-                    title: 'Delicious Food ${index + 1}',
-                    rating: 4.0 + (index * 0.1),
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FoodDetailScreen(
+                            foodItem: trendingFoods[index],
+                          ),
+                        ),
+                      );
+                    },
+                    child: FoodCard(
+                      imageUrl: trendingFoods[index]['image'],
+                      title: trendingFoods[index]['name'],
+                      isLiked: trendingFoods[index]['isLiked'],
+                      onLikePressed: () {
+                        // Handle like button press
+                      },
+                      onAddPressed: () {
+                        // Handle add to cart button press
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${trendingFoods[index]['name']} added to cart'),
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
             ),
-            
-            // Categories Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
@@ -120,8 +281,6 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
-            // Popular Recipes Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Text(
@@ -138,11 +297,34 @@ class HomeScreen extends StatelessWidget {
               crossAxisCount: 2,
               childAspectRatio: 0.8,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: List.generate(popularImages.length, (index) {
-                return FoodCard(
-                  imageUrl: popularImages[index],
-                  title: 'Popular Food ${index + 1}',
-                  rating: 4.5 + (index * 0.1),
+              children: List.generate(popularFoods.length, (index) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FoodDetailScreen(
+                          foodItem: popularFoods[index],
+                        ),
+                      ),
+                    );
+                  },
+                  child: FoodCard(
+                    imageUrl: popularFoods[index]['image'],
+                    title: popularFoods[index]['name'],
+                    isLiked: popularFoods[index]['isLiked'],
+                    onLikePressed: () {
+                      // Handle like button press
+                    },
+                    onAddPressed: () {
+                      // Handle add to cart button press
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${popularFoods[index]['name']} added to cart'),
+                        ),
+                      );
+                    },
+                  ),
                 );
               }),
             ),
@@ -153,17 +335,22 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (index) {
-          if (index == 1) { // Search
+          if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SearchScreen()),
             );
-          } else if (index == 3) { // Notifications
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+            );
+          } else if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const NotificationScreen()),
             );
-          } else if (index == 4) { // Profile
+          } else if (index == 4) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
