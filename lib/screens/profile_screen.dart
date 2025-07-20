@@ -1,9 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../auth/login_screen.dart';
-
-class ProfileScreen extends StatelessWidget {
+import '../screens/address_screen.dart';
+import '../screens/food_preferences_screen.dart';
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _supabase = Supabase.instance.client;
+  late Future<Map<String, dynamic>> _profileFuture;
+  late Future<Map<String, dynamic>?> _addressFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = _fetchProfile();
+    _addressFuture = _fetchAddress();
+  }
+
+  Future<Map<String, dynamic>> _fetchProfile() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('User not logged in');
+
+      final response = await _supabase
+          .from('profiles')
+          .select('first_name, last_name, email')
+          .eq('id', userId)
+          .single();
+
+      return response;
+    } catch (e) {
+      return {
+        'first_name': 'User',
+        'last_name': '',
+        'email': 'unknown@example.com'
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>?> _fetchAddress() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return null;
+
+      final response = await _supabase
+          .from('address')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      return response;
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +77,7 @@ class ProfileScreen extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.blue.shade800,
+        backgroundColor: Colors.green.shade800,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -29,8 +85,8 @@ class ProfileScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.blue.shade800.withOpacity(0.7),
-              Colors.blue.shade600.withOpacity(0.7),
+              Colors.green.shade800.withOpacity(0.7),
+              Colors.green.shade600.withOpacity(0.7),
             ],
           ),
         ),
@@ -61,16 +117,17 @@ class ProfileScreen extends StatelessWidget {
                       bottom: 0,
                       right: 0,
                       child: Container(
+                        width: 30,
+                        height: 30,
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(247, 247, 247, 247),
+                          color: Colors.green.shade800,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
-                        child: IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                          onPressed: () {
-                            // Add edit functionality here
-                          },
+                        child: const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 16,
                         ),
                       ),
                     ),
@@ -81,37 +138,60 @@ class ProfileScreen extends StatelessWidget {
               // User Name with Edit Button
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Pooja Kedia',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20, color: Colors.white),
-                      onPressed: () {
-                        // Add name edit functionality here
-                      },
-                    ),
-                  ],
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: _profileFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+                    
+                    final firstName = snapshot.data?['first_name'] ?? 'User';
+                    final lastName = snapshot.data?['last_name'] ?? '';
+                    
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$firstName $lastName',
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 20, color: Colors.white),
+                          onPressed: () {
+                            // Add name edit functionality here
+                          },
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
               
-              // Address
+              // Email
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-                child: Text(
-                  '76, Muripura scheme...',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.8),
-                  ),
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: _profileFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox();
+                    }
+                    
+                    final email = snapshot.data?['email'] ?? 'unknown@example.com';
+                    
+                    return Text(
+                      email,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    );
+                  },
                 ),
               ),
               
@@ -132,18 +212,37 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // Payment Methods Section
+                    // Profile Options Section
                     Column(
                       children: [
-                        _buildProfileOption(
-                          title: 'Address',
-                          icon: Icons.location_on,
-                          onTap: () {},
+                        FutureBuilder<Map<String, dynamic>?>(
+                          future: _addressFuture,
+                          builder: (context, snapshot) {
+                            final hasAddress = snapshot.data != null;
+                            return _buildProfileOption(
+                              title: 'Address',
+                              subtitle: hasAddress 
+                                  ? '${snapshot.data?['house_number']}, ${snapshot.data?['street']}'
+                                  : 'Add your address',
+                              icon: Icons.location_on,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AddressScreen(),
+                                  ),
+                                ).then((_) {
+                                  setState(() {
+                                    _addressFuture = _fetchAddress();
+                                  });
+                                });
+                              },
+                            );
+                          },
                         ),
-                        _buildProfileOption(
+                         _buildProfileOption(
                           title: 'Favorite Order',
                           icon: Icons.favorite,
-                          isSelected: true,
                           onTap: () {},
                         ),
                         _buildProfileOption(
@@ -152,9 +251,21 @@ class ProfileScreen extends StatelessWidget {
                           onTap: () {},
                         ),
                         _buildProfileOption(
-                          title: 'Language',
-                          icon: Icons.language,
-                          onTap: () {},
+                          title: 'My Preferences',
+                          icon: Icons.restaurant,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const FoodPreferencesScreen(),
+                              ),
+                            ).then((_) {
+                              // Refresh profile data when returning from preferences
+                              setState(() {
+                                _profileFuture = _fetchProfile();
+                              });
+                            });
+                          },
                         ),
                         _buildProfileOption(
                           title: 'Settings',
@@ -176,7 +287,9 @@ class ProfileScreen extends StatelessWidget {
                       title: 'Log Out',
                       icon: Icons.logout,
                       textColor: Colors.red,
-                      onTap: () {
+                      onTap: () async {
+                        await _supabase.auth.signOut();
+                        if (!mounted) return;
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -199,13 +312,14 @@ class ProfileScreen extends StatelessWidget {
     required String title,
     required IconData icon,
     required VoidCallback onTap,
+    String? subtitle,
     bool isSelected = false,
     Color? textColor,
   }) {
     return ListTile(
       leading: Icon(
         icon, 
-        color: isSelected ? Colors.blue.shade800 : Colors.grey[600],
+        color: isSelected ? Colors.green.shade800 : Colors.grey[600],
       ),
       title: Text(
         title,
@@ -215,8 +329,17 @@ class ProfileScreen extends StatelessWidget {
           color: textColor ?? (isSelected ? Colors.blue.shade800 : Colors.black),
         ),
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            )
+          : null,
       trailing: isSelected
-          ? Icon(Icons.check, color: Colors.blue.shade800)
+          ? Icon(Icons.check, color: Colors.green.shade800)
           : Icon(Icons.chevron_right, color: Colors.grey[400]),
       onTap: onTap,
     );

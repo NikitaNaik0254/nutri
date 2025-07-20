@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nikki/screens/food_preferences_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/login_screen.dart';
-import '../screens/home_screen.dart';
 import '../screens/nutri_home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -74,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (_selectedRole == 1) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) => const FoodPreferencesScreen()),
           );
         } else {
           Navigator.pushReplacement(
@@ -118,16 +118,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               const SizedBox(height: 40),
               Container(
-                height: 150,
-                margin: const EdgeInsets.only(bottom: 20),
-                child: Image.asset('assets/images/fooditem1.jpg'),
-              ),
+  width: double.infinity,
+  height: MediaQuery.of(context).size.width, // Make height equal to screen width
+  margin: const EdgeInsets.only(bottom: 20),
+  child: Image.asset(
+    'assets/images/item2.jpg',
+    fit: BoxFit.cover, // Cover ensures the image fills the container
+  ),
+),
+
               Text(
                 'Sign Up',
                 style: GoogleFonts.poppins(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade800,
+                  color: Colors.green.shade800,
                 ),
               ),
               const SizedBox(height: 20),
@@ -194,7 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade800,
+                    backgroundColor: Colors.green.shade800,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -206,6 +211,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            color: Colors.white
                           ),
                         ),
                 ),
@@ -229,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextSpan(
                         text: 'Sign in',
                         style: GoogleFonts.poppins(
-                          color: Colors.blue.shade800,
+                          color: Colors.green.shade800,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -299,7 +305,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: _selectedRole == role
-              ? BorderSide(color: Colors.blue.shade800, width: 2)
+              ? BorderSide(color: Colors.green.shade800, width: 2)
               : BorderSide.none,
         ),
         child: Padding(

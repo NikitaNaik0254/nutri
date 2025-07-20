@@ -121,7 +121,7 @@ class _SearchScreenState extends State<SearchScreen> {
           },
           icon: const Icon(Icons.tune, size: 30),
           style: IconButton.styleFrom(
-            backgroundColor: Colors.blue[800],
+            backgroundColor: Colors.green[800],
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -147,7 +147,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   selectedCategory = selected ? category : 'All';
                 });
               },
-              selectedColor: Colors.blue[800],
+              selectedColor: Colors.green[800],
               labelStyle: GoogleFonts.poppins(
                 color: selectedCategory == category ? Colors.white : Colors.black,
               ),
@@ -187,7 +187,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   'View All',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.blue[800],
+                    color: Colors.green[800],
                   ),
                 ),
               ),
@@ -369,7 +369,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     selectedCategory = selected ? category : 'All';
                   });
                 },
-                selectedColor: Colors.blue[800],
+                selectedColor: Colors.green[800],
                 labelStyle: GoogleFonts.poppins(
                   color: selectedCategory == category ? Colors.white : Colors.black,
                 ),
@@ -398,7 +398,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 label: Text(type),
                 selected: false,
                 onSelected: (selected) {},
-                selectedColor: Colors.blue[800],
+                selectedColor: Colors.green[800],
                 labelStyle: GoogleFonts.poppins(),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -417,7 +417,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[800],
+                backgroundColor: Colors.green[800],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -446,7 +446,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 'Clear',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Colors.blue[800],
+                  color: Colors.green[800],
                   fontWeight: FontWeight.w600,
                 ),
               ),

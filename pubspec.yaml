@@ -10,11 +10,17 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  google_fonts: ^4.0.3
   carousel_slider: ^4.2.1
   provider: ^6.0.5
-  supabase_flutter: ^1.10.25
   table_calendar: ^3.0.9
+  google_generative_ai: ^0.4.7  # Updated to latest version
+  google_fonts: ^6.1.0
+  http: 1.1.0
+  path_provider: ^2.1.1     # Use the latest stable version
+  path: ^1.9.0              # Required for path operations
+  supabase_flutter: ^2.0.0
+  image_picker: ^1.0.4
+  universal_html: ^2.2.1
   
 
 dev_dependencies:
@@ -26,8 +32,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/fooditem1.jpg
-    - assets/images/1.jpg
-    - assets/images/2.jpg
     - assets/images/notification1.png
     - assets/images/notification2.png
     - assets/images/upload2.png
@@ -38,5 +42,13 @@ flutter:
     - assets/images/seasonal-recipe.png
     - assets/images/seasonal-profile.png
     - assets/images/item2.jpg
-    - assets/images/fooditem1.jpg
-    
+    - assets/images/notification1.png
+    - assets/images/fooditem.jpg
+    - assets/images/trending-recipe2.png
+    - assets/images/seasonal-food2.png
+    - assets/images/popular-food1.png
+    - assets/images/seasonal-food3.png
+    - assets/images/seasonal-food1.png
+    - assets/images/item.jpg
+    - assets/images/1.jpg
+    - assets/images/chatbot.png

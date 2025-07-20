@@ -129,8 +129,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.blue.shade800.withOpacity(0.7),
-                  Colors.blue.shade600.withOpacity(0.7),
+                  Colors.green.shade800.withOpacity(0.7),
+                  Colors.green.shade600.withOpacity(0.7),
                 ],
               ),
             ),
@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
+                              color: Colors.green.shade800,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -249,7 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _login,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade800,
+                                backgroundColor: Colors.green.shade800,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -262,6 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
+                                        color: Colors.white
                                       ),
                                     ),
                             ),
@@ -288,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   TextSpan(
                                     text: "Sign Up",
                                     style: TextStyle(
-                                      color: Colors.blue.shade800,
+                                      color: Colors.green.shade800,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -324,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Text(
                               'Forgot Password?',
                               style: GoogleFonts.poppins(
-                                color: Colors.blue.shade800,
+                                color: Colors.green.shade800,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
