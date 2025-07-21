@@ -27,18 +27,19 @@ class HeaderWidget extends StatelessWidget {
             ),
 
             // Centered title with proper expansion
-            Expanded(
-              child: Center(
-                child: Text(
-                  'NutriNest',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-              ),
-            ),
+             Expanded(
+  child: Align(
+    alignment: const Alignment(0.1, 0), // 0.1 moves it 10% right of center
+    child: Text(
+      'NutriNest',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).primaryColor,
+      ),
+    ),
+  ),
+),
 
             // Right-side balance (or replace with real icon when needed)
             const SizedBox(

@@ -21,6 +21,7 @@ dependencies:
   supabase_flutter: ^2.0.0
   image_picker: ^1.0.4
   universal_html: ^2.2.1
+  cached_network_image: ^3.2.3
   
 
 dev_dependencies:
@@ -46,9 +47,10 @@ flutter:
     - assets/images/fooditem.jpg
     - assets/images/trending-recipe2.png
     - assets/images/seasonal-food2.png
-    - assets/images/popular-food1.png
     - assets/images/seasonal-food3.png
     - assets/images/seasonal-food1.png
     - assets/images/item.jpg
     - assets/images/1.jpg
     - assets/images/chatbot.png
+    - assets/images/food_placeholder.png
+    - assets/images/profile_placeholder.png
