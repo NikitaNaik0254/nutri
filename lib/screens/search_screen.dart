@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -9,7 +10,9 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  final supabase = Supabase.instance.client;
   String selectedCategory = 'All';
+  String searchQuery = '';
   final List<String> categories = [
     'All',
     'Breakfast',
@@ -18,6 +21,47 @@ class _SearchScreenState extends State<SearchScreen> {
     'Snacks',
     'Desserts'
   ];
+  List<Map<String, dynamic>> recipes = [];
+  bool isLoading = true;
+  bool isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRecipes();
+  }
+
+  Future<void> _fetchRecipes({String? category}) async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final query = supabase.from('recipes').select();
+
+      if (category != null && category != 'All') {
+        query.eq('category', category);
+      }
+
+      if (searchQuery.isNotEmpty) {
+        query.ilike('name', '%$searchQuery%');
+      }
+
+      final response = await query.order('created_at', ascending: false);
+
+      setState(() {
+        recipes = List<Map<String, dynamic>>.from(response);
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching recipes: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Search',
+          'Search Recipes',
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -49,45 +93,8 @@ class _SearchScreenState extends State<SearchScreen> {
             _buildCategoryChips(),
             const SizedBox(height: 16),
             
-            // Popular Recipes Section
-            _buildSection(
-              title: 'Popular Recipes',
-              items: [
-                _buildRecipeCard('Egg & Avocado Toast', 'assets/images/item2.jpg'),
-                _buildRecipeCard('Bowl of Rice with Chicken', 'assets/images/item2.jpg'),
-              ],
-              showViewAll: true,
-            ),
-            
-            // Trending Recipes Section
-            _buildSection(
-              title: 'Trending Recipes',
-              items: [
-                _buildRecipeCard('Chicken Salad', 'assets/images/item2.jpg'),
-                _buildRecipeCard('Pasta Carbonara', 'assets/images/item2.jpg'),
-              ],
-              showViewAll: true,
-            ),
-            
-            // Seasonal Recipes Section
-            _buildSection(
-              title: 'Seasonal Recipes',
-              items: [
-                _buildSeasonalRecipeCard(
-                  'Easy homemade paneer burger', 
-                  'James Spoder', 
-                  'assets/images/notification1.png',
-                  'assets/images/notification2.png'
-                ),
-                _buildSeasonalRecipeCard(
-                  'Blueberry with egg for breakfast', 
-                  'Alice Fold', 
-                  'assets/images/seasonal-recipe.png',
-                  'assets/images/seasonal-profile.png'
-                ),
-              ],
-              showViewAll: true,
-            ),
+            // Recipes Grid
+            _buildRecipesGrid(),
           ],
         ),
       ),
@@ -105,18 +112,24 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search',
+                hintText: 'Search recipes...',
                 border: InputBorder.none,
                 prefixIcon: const Icon(Icons.search),
                 contentPadding: const EdgeInsets.symmetric(vertical: 15),
               ),
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                  isSearching = value.isNotEmpty;
+                });
+                _fetchRecipes(category: selectedCategory != 'All' ? selectedCategory : null);
+              },
             ),
           ),
         ),
         const SizedBox(width: 8),
         IconButton(
           onPressed: () {
-            // Show filter modal
             _showFilterModal(context);
           },
           icon: const Icon(Icons.tune, size: 30),
@@ -146,6 +159,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 setState(() {
                   selectedCategory = selected ? category : 'All';
                 });
+                _fetchRecipes(category: selectedCategory != 'All' ? selectedCategory : null);
               },
               selectedColor: Colors.green[800],
               labelStyle: GoogleFonts.poppins(
@@ -161,151 +175,143 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required List<Widget> items,
-    bool showViewAll = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (showViewAll)
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  'View All',
+  Widget _buildRecipesGrid() {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (recipes.isEmpty) {
+      return Center(
+        child: Text(
+          isSearching
+              ? 'No recipes found for "$searchQuery"'
+              : selectedCategory != 'All'
+                  ? 'No $selectedCategory recipes available'
+                  : 'No recipes available',
+          style: GoogleFonts.poppins(),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: recipes.length,
+      itemBuilder: (context, index) {
+        return _buildRecipeCard(recipes[index]);
+      },
+    );
+  }
+
+ Widget _buildRecipeCard(Map<String, dynamic> recipe) {
+  return GestureDetector(
+    onTap: () => _showRecipeDetails(recipe),
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: recipe['image_url'] != null
+                ? Image.network(
+                    recipe['image_url'].toString(),
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 120,
+                        color: Colors.grey[200],
+                        child: const Center(child: Icon(Icons.fastfood)),
+                      );
+                    },
+                  )
+                : Container(
+                    height: 120,
+                    color: Colors.grey[200],
+                    child: const Center(child: Icon(Icons.fastfood)),
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  recipe['name']?.toString() ?? 'No name',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.green[800],
+                    fontWeight: FontWeight.w500,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: items,
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _buildRecipeCard(String title, String imagePath) {
-    return Container(
-      width: 150,
-      margin: const EdgeInsets.only(right: 12),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.asset(
-                imagePath,
-                height: 100,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSeasonalRecipeCard(String title, String author, String recipeImage, String profileImage) {
-    return Container(
-      width: 250,
-      margin: const EdgeInsets.only(right: 12),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.asset(
-                recipeImage,
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                        IconButton(
+                          onPressed: () {
+                            if (recipe['id'] != null) {
+                              _toggleLike(recipe['id'].toString());
+                            }
+                          },
+                          icon: Icon(
+                            (recipe['is_liked'] as bool?) == true
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: (recipe['is_liked'] as bool?) == true
+                                ? Colors.red
+                                : Colors.grey,
+                            size: 20,
                           ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 12,
-                              backgroundImage: AssetImage(profileImage),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              author,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
+                        IconButton(
+                          onPressed: () {
+                            if (recipe['id'] != null) {
+                              _addToCart(recipe['id'].toString());
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.shopping_cart,
+                            size: 20,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                         ),
                       ],
                     ),
-                  ),
-                  const Icon(Icons.arrow_forward),
-                ],
-              ),
+                    if (recipe['calories'] != null)
+                      Text(
+                        '${recipe['calories']} cal',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showFilterModal(BuildContext context) {
     showModalBottomSheet(
@@ -397,7 +403,9 @@ class _SearchScreenState extends State<SearchScreen> {
               return ChoiceChip(
                 label: Text(type),
                 selected: false,
-                onSelected: (selected) {},
+                onSelected: (selected) {
+                  // You can implement type filtering here
+                },
                 selectedColor: Colors.green[800],
                 labelStyle: GoogleFonts.poppins(),
                 shape: RoundedRectangleBorder(
@@ -415,6 +423,7 @@ class _SearchScreenState extends State<SearchScreen> {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
+                _fetchRecipes(category: selectedCategory != 'All' ? selectedCategory : null);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[800],
@@ -439,8 +448,10 @@ class _SearchScreenState extends State<SearchScreen> {
               onPressed: () {
                 setState(() {
                   selectedCategory = 'All';
+                  searchQuery = '';
                 });
                 Navigator.pop(context);
+                _fetchRecipes();
               },
               child: Text(
                 'Clear',
@@ -455,6 +466,169 @@ class _SearchScreenState extends State<SearchScreen> {
           const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+
+  Future<void> _toggleLike(String recipeId) async {
+    try {
+      // Implement your like logic here
+      // This might involve updating the recipe in Supabase
+      // or managing a separate 'likes' table
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Like functionality will be implemented')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error toggling like: $e')),
+      );
+    }
+  }
+
+  Future<void> _addToCart(String recipeId) async {
+    try {
+      // Implement your cart logic here
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add to cart functionality will be implemented')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding to cart: $e')),
+      );
+    }
+  }
+
+  void _showRecipeDetails(Map<String, dynamic> recipe) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  recipe['name'] ?? 'Recipe',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (recipe['image_url'] != null)
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      recipe['image_url'],
+                      height: 200,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 200,
+                          color: Colors.grey[200],
+                          child: const Center(child: Icon(Icons.fastfood)),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              if (recipe['description'] != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Description',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      recipe['description'],
+                      style: GoogleFonts.poppins(),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              if (recipe['ingredients'] != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ingredients',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      recipe['ingredients'],
+                      style: GoogleFonts.poppins(),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              if (recipe['steps'] != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Steps',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      recipe['steps'],
+                      style: GoogleFonts.poppins(),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              // Nutrition information
+              Text(
+                'Nutrition Information',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 16,
+                runSpacing: 8,
+                children: [
+                  _buildNutritionInfo('Calories', recipe['calories']?.toString()),
+                  _buildNutritionInfo('Protein', recipe['protein']?.toString()),
+                  _buildNutritionInfo('Carbs', recipe['carbs']?.toString()),
+                  _buildNutritionInfo('Fat', recipe['fat']?.toString()),
+                  if (recipe['dietary'] != null)
+                    _buildNutritionInfo('Dietary', recipe['dietary']),
+                ],
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNutritionInfo(String label, String? value) {
+    return Chip(
+      label: Text(
+        value != null ? '$label: $value' : label,
+        style: GoogleFonts.poppins(),
+      ),
+      backgroundColor: Colors.grey[200],
     );
   }
 }
