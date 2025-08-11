@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.nikki"
-        minSdk = 21
+        minSdk = 22
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -29,7 +29,8 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+        isShrinkResources = true
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -42,6 +43,7 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22")
 }
 

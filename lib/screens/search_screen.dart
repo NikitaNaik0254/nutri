@@ -111,11 +111,11 @@ class _SearchScreenState extends State<SearchScreen> {
               borderRadius: BorderRadius.circular(25),
             ),
             child: TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Search recipes...',
                 border: InputBorder.none,
-                prefixIcon: const Icon(Icons.search),
-                contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                prefixIcon: Icon(Icons.search),
+                contentPadding: EdgeInsets.symmetric(vertical: 15),
               ),
               onChanged: (value) {
                 setState(() {

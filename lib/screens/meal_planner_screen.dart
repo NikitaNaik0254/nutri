@@ -43,7 +43,7 @@ class _MealPlannerScreenState extends State<MealPlannerScreen> {
   String getCurrentWeekdayLabel() {
     if (startOfWeek == null) return '';
     DateTime current = startOfWeek!.add(Duration(days: currentDayIndex));
-    return '${current.weekday == 7 ? "Sunday" : "${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][current.weekday - 1]}"} (${current.day}/${current.month})';
+    return '${current.weekday == 7 ? "Sunday" : ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][current.weekday - 1]} (${current.day}/${current.month})';
   }
 
   @override

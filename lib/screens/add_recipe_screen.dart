@@ -172,7 +172,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     return TextFormField(
       controller: controller,
       keyboardType:
-          isNumber ? TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+          isNumber ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),

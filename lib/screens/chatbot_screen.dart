@@ -460,14 +460,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
+        title: const Row(
           children: [
             CircleAvatar(
               backgroundImage: AssetImage('assets/images/chatbot.png'),
               radius: 15,
             ),
-            const SizedBox(width: 10),
-            const Text('Recipe Assistant'),
+            SizedBox(width: 10),
+            Text('Recipe Assistant'),
           ],
         ),
       ),
@@ -501,7 +501,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    CircleAvatar(
+                                    const CircleAvatar(
                                       backgroundImage:
                                           AssetImage('assets/images/chatbot.png'),
                                       radius: 15,

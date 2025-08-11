@@ -277,10 +277,10 @@ class _FoodPreferencesScreenState extends State<FoodPreferencesScreen> {
             
             ElevatedButton(
               onPressed: _savePreferences,
-              child: const Text('Save Preferences'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
+              child: const Text('Save Preferences'),
             ),
           ],
         ),
