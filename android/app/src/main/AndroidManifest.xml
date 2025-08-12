@@ -1,9 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Add permissions here, before the application tag -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
-
     <application
         android:label="nikki"
         android:name="${applicationName}"
@@ -28,6 +23,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+                <data android:scheme="com.example.nikki"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

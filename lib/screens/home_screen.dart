@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:badges/badges.dart' as badges;
 import '../widgets/category_button.dart';
 import '../widgets/header.dart';
 import '../screens/search_screen.dart';
@@ -91,6 +92,66 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<int> _getCartItemCount() async {
+  try {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return 0;
+    
+    final response = await _supabase
+        .from('cart')
+        .select('*') // Select all columns (but we only care about count)
+        .eq('user_id', userId)
+        .count(CountOption.exact); // New way to count rows
+
+    return response.count ?? 0;
+  } catch (e) {
+    debugPrint('Error getting cart count: $e');
+    return 0;
+  }
+}
+
+  Future<void> _addToCart(Map<String, dynamic> recipe) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('User not logged in');
+
+      // Check if item already exists in cart
+      final existingItem = await _supabase
+          .from('cart')
+          .select()
+          .eq('user_id', userId)
+          .eq('recipe_id', recipe['id'])
+          .maybeSingle();
+
+      if (existingItem != null) {
+        // Update quantity if item exists
+        await _supabase
+            .from('cart')
+            .update({'quantity': existingItem['quantity'] + 1})
+            .eq('id', existingItem['id']);
+      } else {
+        // Add new item to cart
+        await _supabase.from('cart').insert({
+          'user_id': userId,
+          'recipe_id': recipe['id'],
+          'quantity': 1,
+        });
+      }
+
+      if (!mounted) return;
+      setState(() {}); // Refresh the badge count
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${recipe['name']} added to cart')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add to cart: ${e.toString()}')),
+      );
+      debugPrint('Error adding to cart: $e');
+    }
+  }
+
   Future<void> _refreshData() async {
     setState(() {
       _loadData();
@@ -104,12 +165,29 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         title: const HeaderWidget(),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CartScreen()),
+          FutureBuilder<int>(
+            future: _getCartItemCount(),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+              return badges.Badge(
+                position: badges.BadgePosition.topStart(top: -8, start: -8),
+                badgeContent: Text(
+                  count.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
+                ),
+                showBadge: count > 0,
+                child: IconButton(
+                  icon: const Icon(Icons.shopping_cart),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CartScreen()),
+                    ).then((_) {
+                      _refreshData();
+                      setState(() {}); // Refresh badge count
+                    });
+                  },
+                ),
               );
             },
           ),
@@ -142,12 +220,30 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('View all functionality coming soon!')),
+                  );
+                },
+                child: Text(
+                  'View all',
+                  style: GoogleFonts.poppins(
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(
@@ -217,10 +313,10 @@ class _HomeScreenState extends State<HomeScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          elevation: 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: SizedBox(
@@ -229,16 +325,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildRecipeImage(recipe['image_url']),
                 ),
               ),
-              // Content
               Padding(
-                padding: const EdgeInsets.all(4.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       recipe['name'] ?? 'No name',
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
@@ -253,12 +348,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           '${recipe['time_to_make'] ?? '?'} min',
                           style: GoogleFonts.poppins(fontSize: 12),
                         ),
+                        const Spacer(),
+                        Text(
+                          '${recipe['calories']?.round() ?? '?'} kcal',
+                          style: GoogleFonts.poppins(fontSize: 12),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-              // Actions
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
@@ -266,15 +365,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.favorite_border, size: 20),
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Added to favorites!')),
+                        );
+                      },
                     ),
                     IconButton(
                       icon: const Icon(Icons.add_shopping_cart, size: 20),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${recipe['name']} added to cart')),
-                        );
-                      },
+                      onPressed: () => _addToCart(recipe),
                     ),
                   ],
                 ),
@@ -308,57 +407,57 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-Widget _buildCategoriesSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(
-          'Categories',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+  Widget _buildCategoriesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            'Categories',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-      ),
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            _buildComingSoonCategoryButton(Icons.cake, 'Dessert'),
-            const SizedBox(width: 10),
-            _buildComingSoonCategoryButton(Icons.fastfood, 'Snacks'),
-            const SizedBox(width: 10),
-            _buildComingSoonCategoryButton(Icons.restaurant, 'Meals'),
-            const SizedBox(width: 10),
-            _buildComingSoonCategoryButton(Icons.local_drink, 'Drinks'),
-            const SizedBox(width: 10),
-            _buildComingSoonCategoryButton(Icons.health_and_safety, 'Healthy'),
-          ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              _buildComingSoonCategoryButton(Icons.cake, 'Dessert'),
+              const SizedBox(width: 10),
+              _buildComingSoonCategoryButton(Icons.fastfood, 'Snacks'),
+              const SizedBox(width: 10),
+              _buildComingSoonCategoryButton(Icons.restaurant, 'Meals'),
+              const SizedBox(width: 10),
+              _buildComingSoonCategoryButton(Icons.local_drink, 'Drinks'),
+              const SizedBox(width: 10),
+              _buildComingSoonCategoryButton(Icons.health_and_safety, 'Healthy'),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
-Widget _buildComingSoonCategoryButton(IconData icon, String label) {
-  return GestureDetector(
-    onTap: () {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Coming Soon!'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-    },
-    child: CategoryButton(
-      icon: icon,
-      label: label,
-    ),
-  );
-}
+  Widget _buildComingSoonCategoryButton(IconData icon, String label) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Coming Soon!'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      },
+      child: CategoryButton(
+        icon: icon,
+        label: label,
+      ),
+    );
+  }
 
   Widget _buildBottomNavBar() {
     return BottomNavigationBar(
@@ -474,6 +573,10 @@ Widget _buildComingSoonCategoryButton(IconData icon, String label) {
               _buildDrawerItem(Icons.search, 'Search', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
+              }),
+              _buildDrawerItem(Icons.shopping_cart, 'Cart', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
               }),
               _buildDrawerItem(Icons.chat, 'Chatbot', () {
                 Navigator.pop(context);
